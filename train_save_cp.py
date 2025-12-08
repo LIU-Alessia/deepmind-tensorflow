@@ -23,8 +23,11 @@ import matplotlib
 import numpy as np
 import tensorflow as tf
 import tkinter  # pylint: disable=unused-import
+import os  # [新增] 引入 os 模块处理路径
 
+# 设置无头模式，防止在没有显示器的服务器/WSL上报错
 matplotlib.use('Agg')
+import matplotlib.pyplot as plt # [新增] 显式引入 pyplot
 
 import dataset_reader  # pylint: disable=g-bad-import-order, g-import-not-at-top
 import model  # pylint: disable=g-bad-import-order
@@ -109,7 +112,7 @@ def train():
 
   tf.reset_default_graph()
 
-  # [FIX 1] Create global_step variable
+  # Create global_step variable
   global_step = tf.train.get_or_create_global_step()
 
   # Create the motion models for training and evaluation
@@ -186,7 +189,7 @@ def train():
   clipped_grad = [
       clip_gradient(g, var, FLAGS.training_clipping) for g, var in grad
   ]
-  # [FIX 2] Pass global_step to apply_gradients so it increments automatically
+  # Pass global_step to apply_gradients so it increments automatically
   train_op = optimizer.apply_gradients(clipped_grad, global_step=global_step)
 
   # Store the grid scores
@@ -212,11 +215,19 @@ def train():
       checkpoint_dir=FLAGS.saver_results_directory,
       save_steps=FLAGS.training_steps_per_epoch,
       saver=saver)
+      
+  # Define Session Config
+  config = tf.ConfigProto()
+  config.gpu_options.allow_growth = True
+
+  # [新增] 用于存储所有 epoch 的 loss 历史
+  loss_history = []
 
   # Add hooks and checkpoint_dir to SingularMonitoredSession
   with tf.train.SingularMonitoredSession(
       hooks=[saver_hook],
-      checkpoint_dir=FLAGS.saver_results_directory) as sess:
+      checkpoint_dir=FLAGS.saver_results_directory,
+      config=config) as sess:
     
     for epoch in range(FLAGS.training_epochs):
       loss_acc = list()
@@ -224,8 +235,13 @@ def train():
         res = sess.run({'train_op': train_op, 'total_loss': train_loss})
         loss_acc.append(res['total_loss'])
 
+      # 计算当前 epoch 的平均 loss
+      mean_loss = np.mean(loss_acc)
+      loss_history.append(mean_loss) # [新增] 记录 Loss
+
       tf.logging.info('Epoch %i, mean loss %.5f, std loss %.5f', epoch,
-                      np.mean(loss_acc), np.std(loss_acc))
+                      mean_loss, np.std(loss_acc))
+      
       if epoch % FLAGS.saver_eval_time == 0:
         res = dict()
         for _ in range(FLAGS.training_evaluation_minibatch_size //
@@ -244,6 +260,22 @@ def train():
                 'btln_90_separation'] = utils.get_scores_and_plot(
                     latest_epoch_scorer, res['pos_xy'], res['bottleneck'],
                     FLAGS.saver_results_directory, filename)
+
+  # [新增] 训练结束后绘制 Loss 曲线
+  print("Training finished. Plotting loss curve...", flush=True)
+  plt.figure(figsize=(10, 6))
+  plt.plot(loss_history, label='Training Loss', color='blue')
+  plt.xlabel('Epoch')
+  plt.ylabel('Mean Loss')
+  plt.title('Training Loss Curve')
+  plt.grid(True)
+  plt.legend()
+  
+  # 保存图片
+  loss_plot_path = os.path.join(FLAGS.saver_results_directory, 'loss_curve.png')
+  plt.savefig(loss_plot_path)
+  print(f"Loss curve saved to {loss_plot_path}")
+  plt.close()
 
 
 def main(unused_argv):
