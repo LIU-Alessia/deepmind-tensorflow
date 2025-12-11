@@ -21,7 +21,7 @@ print(f"TensorFlow Version: {tf.__version__}")
 print(f"Eager Execution Enabled: {tf.executing_eagerly()}")
 
 # ==========================================
-DATASET_NAME = 'square_room_20min_2.2m_100_final'
+DATASET_NAME = 'square_room_20min_2.2m_100_segmented'
 DATA_DIR = os.path.join('datasets/square_room', DATASET_NAME)
 BOX_SIZE = 2.2
 LIMIT = BOX_SIZE / 2.0
