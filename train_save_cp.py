@@ -32,7 +32,7 @@ tf.flags.DEFINE_list('task_velocity_noise', [0.0, 0.0, 0.0], 'Velocity noise')
 
 # Model config
 tf.flags.DEFINE_integer('model_nh_lstm', 128, 'Hidden units in LSTM')
-tf.flags.DEFINE_integer('model_nh_bottleneck', 256, 'Hidden units in bottleneck')
+tf.flags.DEFINE_integer('model_nh_bottleneck', 512, 'Hidden units in bottleneck')
 tf.flags.DEFINE_list('model_dropout_rates', [0.5], 'Dropout rates')
 tf.flags.DEFINE_float('model_weight_decay', 1e-5, 'Weight decay')
 tf.flags.DEFINE_bool('model_bottleneck_has_bias', False, 'Bias in bottleneck')
@@ -179,7 +179,8 @@ def train():
           })
           res = utils.concat_dict(res, mb_res)
         
-        filename = 'rates_and_sac_epoch_{}.pdf'.format(epoch)
+        # filename = 'rates_and_sac_epoch_{}.pdf'.format(epoch)
+        filename = 'rates_and_sac_latest.pdf'
         utils.get_scores_and_plot(
             latest_epoch_scorer, res['pos_xy'], res['bottleneck'],
             FLAGS.saver_results_directory, filename)

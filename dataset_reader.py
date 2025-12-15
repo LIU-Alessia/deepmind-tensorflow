@@ -13,8 +13,8 @@ DatasetInfo = collections.namedtuple(
 _DATASETS = dict(
     square_room=DatasetInfo(
         # 【注意】对应新的文件夹名
-        basepath='square_room_20min_2.2m_100_segmented', 
-        size=100,             
+        basepath='square_room_20min_2.2m_10_segmented', 
+        size=10,             
         sequence_length=100, # 现在每个记录就是 100 步
         coord_range=((-1.1, 1.1), (-1.1, 1.1))),
 )
