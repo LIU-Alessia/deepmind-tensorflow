@@ -3,12 +3,12 @@ import numpy as np
 import os
 
 # --- 配置 ---
-DATASET_NAME = 'square_room_20min_2.2m_10_segmented'
+DATASET_NAME = 'square_room_1min_2.2m_100_segmented'
 OUTPUT_DIR = os.path.join('datasets/square_room', DATASET_NAME)
 
-NUM_FILES = 10           
+NUM_FILES = 100           
 TRAJS_PER_FILE = 1        
-TOTAL_STEPS = 60000       
+TOTAL_STEPS = 3000       
 SEGMENT_LEN = 100         
 NUM_SEGMENTS = TOTAL_STEPS // SEGMENT_LEN 
 BOX_WIDTH = 2.2           
